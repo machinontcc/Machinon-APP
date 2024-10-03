@@ -1,76 +1,71 @@
-// components/Card.js
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 
-const Card = ({ data }) => {
+const Card = ({data}) => {
   return (
     <View style={styles.cardContainer}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{data.title}</Text>
+      <View style={styles.content}>
+        <Text style={styles.title}>{data.title}</Text>
         <View style={styles.valueContainer}>
-          <Text style={styles.cardValue}>{data.value}</Text>
+          <Text style={[styles.value, {color: data.valueColor}]}>{data.value}</Text>
         </View>
         <View style={styles.infoContainer}>
-          {/* Substitua 'icon.png' pelo caminho da sua imagem */}
-          <Image
-            source={require('../CardsHome/assets/icon.png')} // Imagem do ícone
-            style={styles.icon}
-          />
-          <Text style={styles.infoText}>8.5%</Text>
-          <Text style={styles.timeText}>Entre 13:00 e 15:00</Text>
+          <Text style={[styles.percentage, {color: data.percentageColor}]}>{data.percentage}</Text>
+          <Text style={styles.time}>{data.info}</Text>
         </View>
       </View>
     </View>
   );
 };
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#1e1e1e', // Cor do fundo do card
+    backgroundColor: '#1e1e2e', // Um cinza escuro, parecido com bg-gray-800
+    borderRadius: 15,
+    width: width * 0.9, // Ocupa quase toda a largura da tela
     padding: 20,
-    borderRadius: 10,
-    margin: 10, // Espaçamento ao redor do card
-    flex: 1, // Para ocupar a largura da tela
-    height: 250, // Altura do card
-    justifyContent: 'flex-start', // Alinhamento do conteúdo
+    marginVertical: 10,
+    marginRight: 10,
+    shadowColor: '#000829', // Sombra moderna e futurista
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8, // Para Android
   },
-  cardContent: {
-    flex: 1,
+  content: {
+    flexDirection: 'column',
     justifyContent: 'flex-start',
   },
-  cardTitle: {
-    fontSize: 18,
+  title: {
+    color: '#ffffff', // Cor do texto branco
+    fontSize: 20, // Tamanho do texto ajustado
     fontWeight: 'bold',
-    color: '#fff',
+    marginBottom: 10,
   },
   valueContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginVertical: 10,
+  },
+  value: {
+    fontSize: 28, // Para destacar bem
+    fontWeight: 'bold',
+  },
+  infoContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
   },
-  cardValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#00ff00', // Cor verde para os valores
-  },
-  infoContainer: {
-    marginTop: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  icon: {
-    width: 20,
-    height: 12, // Ajuste conforme necessário
-  },
-  infoText: {
-    color: '#FFA500', // Cor laranja para informações
-    marginLeft: 5,
+  percentage: {
+    color: '#FF8743', // Cor laranja para a porcentagem
     fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 10,
   },
-  timeText: {
-    color: '#ccc', // Cor cinza claro para o texto do tempo
-    marginLeft: 10,
+  time: {
+    color: '#b0b0b0', // Cinza claro para o horário
     fontSize: 14,
   },
 });
