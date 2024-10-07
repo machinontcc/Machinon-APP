@@ -1,23 +1,22 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; 
-import { NavigationContainer } from '@react-navigation/native';
+import React, {useState} from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Home from '../pages/Home';
 
-const Tab = createBottomTabNavigator();
+import SplashScreen from '../pages/SplashScreen';
+import LoginScreen from '../pages/LoginScreen';
 
-export function Routes() {
-  return (
-      <Tab.Navigator
-        initialRouteName="Home"
-        screenOptions={{
-          headerShown: false, // Esconder cabeçalho por padrão (opcional)
-        }}
-      >
-        <Tab.Screen name="Home" component={Home} />
+import DrawerNavigator from './DrawerNavigator';
 
-      </Tab.Navigator>
-  );
-};
+const Stack = createNativeStackNavigator();
 
-export default Routes;
+export default function Routes(){
+  return(
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+
+      <Stack.Screen name='Splash' component={SplashScreen} />
+      <Stack.Screen name='Login' component={LoginScreen} />
+      <Stack.Screen name='Main' component={DrawerNavigator} />
+
+    </Stack.Navigator>
+  )
+}

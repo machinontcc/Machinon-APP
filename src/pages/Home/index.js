@@ -1,7 +1,10 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Dimensions, SafeAreaView, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Dimensions, SafeAreaView, ScrollView, StatusBar } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ModalSelector from 'react-native-modal-selector'; // Importando a biblioteca
+import { useNavigation } from "@react-navigation/native";
+import { useDrawerStatus } from "@react-navigation/drawer";
+import { useUser } from "../../contexts/UserContext";
 
 import Card from "../../components/CardsHome";
 import AtividadesRender from "../../components/AtividadesProgamadas";
@@ -30,18 +33,39 @@ export default function Home() {
         { key: 'Esta Semana', label: 'Esta Semana' },
     ];
 
+    const navigation = useNavigation();
+    const drawerStatus = useDrawerStatus(); // Hook para saber o status do drawer
+
+    const {userData, setUserData} = useUser();
+
+    // UseEffect para atualizar a StatusBar quando o drawer abrir ou fechar
+    useEffect(() => {
+        if (drawerStatus === 'open') {
+            StatusBar.setBackgroundColor('#121212');
+        } else {
+            StatusBar.setBackgroundColor('#050512');
+        }
+    }, [drawerStatus]);
+
     return (
         <SafeAreaView style={styles.safeArea}>
+            <StatusBar barStyle="light-content" />
             <ScrollView style={styles.scrollContainer}>
                 <View style={styles.headerProfile}>
-                    <Image
-                        source={require('../Home/assets/image.png')}
-                        style={styles.profileImage}
-                    />
-                    <View>
-                        <Text style={styles.welcomeText}>Olá (NOME),</Text>
-                        <Text style={styles.subText}>Bem-vindo de volta!</Text>
+                    <View style={styles.profileSection}>
+                        <Image
+                            source={require('../Home/assets/image.png')}
+                            style={styles.profileImage}
+                        />
+                        <View>
+                            <Text style={styles.welcomeText}>Olá {userData ? userData.nome : 'Usuário'},</Text>
+                            <Text style={styles.subText}>Bem-vindo de volta!</Text>
+                        </View>
                     </View>
+
+                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                        <Icon name="bars" size={24} color="#fff" style={styles.burgerIcon} />
+                    </TouchableOpacity>
                 </View>
 
                 <View style={styles.cards}>
@@ -97,10 +121,13 @@ export default function Home() {
                             selectTextStyle={styles.selectText}
                             overlayStyle={styles.overlay}
                             cancelText="Cancelar"
+                            optionContainerStyle={styles.optionContainer}
                             cancelStyle={styles.cancelButton}
                             cancelTextStyle={styles.cancelText}
                             optionTextStyle={styles.optionText}
+                            optionStyle={styles.optionStyle}
                         >
+
                             <View style={styles.selectContainer}>
                                 <Text style={styles.selectText} numberOfLines={1}>{selectedDate} </Text>
                                 <Icon name="caret-down" size={16} color="#fff" style={styles.caretIcon} />
@@ -122,17 +149,22 @@ export default function Home() {
 const styles = StyleSheet.create({
     safeArea: {
         backgroundColor: '#050512',
-        flex: 1
+        flex: 1,
     },
     scrollContainer: {
         paddingTop: 20,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
     },
     headerProfile: {
-        flexDirection: 'row',
+        flexDirection: 'row', // Alinha os itens na horizontal
+        justifyContent: 'space-between', // Espaça o conteúdo do perfil à esquerda e o ícone à direita
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingVertical: 10,
+    },
+    profileSection: {
+        flexDirection: 'row', // Agrupa imagem e texto
+        alignItems: 'center',
     },
     profileImage: {
         width: 50,
@@ -148,6 +180,9 @@ const styles = StyleSheet.create({
     subText: {
         color: '#fff',
         fontSize: 20,
+    },
+    burgerIcon: {
+        padding: 10, // Dá espaço para o ícone ser clicável
     },
     cards: {
         marginTop: 30
@@ -209,15 +244,45 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     overlay: {
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
     },
     cancelButton: {
-        backgroundColor: '#f00',
+        backgroundColor: '#FF4C4C', // Cor de cancelamento vibrante
+        borderRadius: 10,
+        marginTop: 10,
+        paddingVertical: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        elevation: 4,
     },
     cancelText: {
         color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
     optionText: {
-        color: '#000',
+        color: '#FFF', // Texto branco para contraste
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    optionStyle: {
+        backgroundColor: '#2E2E2E', // Fundo mais escuro nas opções individuais
+        borderRadius: 8,
+        paddingVertical: 15,
+        paddingHorizontal: 10,
+        marginVertical: 5,
+    },
+    optionContainer: {
+        backgroundColor: '#1E1E1E', // Fundo escuro para as opções
+        borderRadius: 10,
+        marginVertical: 5,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation: 6, // Sombra para Android
     },
 });
