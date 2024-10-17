@@ -2,8 +2,14 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 
+import { useUser } from '../../contexts/UserContext';
 
 const CustomDrawer = (props) => {
+  const {userData, setUserData} = useUser();
+  const profileImageUrl = userData?.urlProfileImg || 'default-image-url';
+  const userName = userData?.nome || 'Usuário';
+  const userEmail = userData?.email;
+
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ backgroundColor: '#121212' }}>
       {/* Logo da Empresa */}
@@ -12,18 +18,6 @@ const CustomDrawer = (props) => {
           source={require('../../../assets/logo_white.png')}
           style={styles.logo}
         />
-      </View>
-
-      {/* Foto de perfil, Nome de Usuário e Email */}
-      <View style={styles.profileContainer}>
-        <Image 
-          source={require('./assets/image.png')}
-          style={styles.profileImage}
-        />
-        <View>
-          <Text style={styles.userName}>Louco da faca</Text>
-          <Text style={styles.userEmail}>louco@123.gmail</Text>
-        </View>
       </View>
 
       <View style={styles.drawerItemsContainer}>
@@ -43,31 +37,6 @@ const styles = StyleSheet.create({
   logo: {
     width: '60%',
     height: 50,
-  },
-  profileContainer: {
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2c2c2c',
-    marginBottom: 20,
-    marginHorizontal: 10,
-    flexDirection: 'row'
-  },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 40,
-    marginBottom: 10,
-  },
-  userName: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-  userEmail: {
-    color: '#ccc',
-    fontSize: 12,
   },
   drawerItemsContainer: {
     paddingTop: 10,

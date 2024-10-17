@@ -1,44 +1,47 @@
+// LoginScreen.js
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, Linking, StatusBar } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { auth } from '../../firebaseConnection';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../../firebaseConfig'; // Importando a configuração do Firebase
 import { useUser } from '../../contexts/UserContext';
+import { signInWithEmailAndPassword } from 'firebase/auth'; // Importando a função de login
 
-import Icon from 'react-native-vector-icons/FontAwesome'; // Certifique-se de instalar a biblioteca de ícones
-import CheckBox from 'react-native-vector-icons/MaterialIcons'; // Para ícones de checkbox
-
-const LoginScreen = () => {
-    const navigation = useNavigation();
+const LoginScreen = ({ navigation }) => {
+    const { setUser, fetchUserData } = useUser();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [rememberMe, setRememberMe] = useState(false);
-    const [errorMessage, setErrorMessage] = useState(''); // Estado para a mensagem de erro
+    const [errorMessage, setErrorMessage] = useState('');
 
-    function handleLogin() {
-        signInWithEmailAndPassword(auth, email, password)
-        .then((userData) => {
+    const handleLogin = async () => {
+        try {
+            // Faz login com Firebase Auth padrão
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userId = userCredential.user.uid;
+
+            // Busca dados do usuário no Firestore
+            const userData = await fetchUserData(userId);
+            setUser(userData);
             navigation.navigate('Main');
-        })
-        .catch((err) => {
-            let msgErro = "";
-
-            switch (err.code) {
+        } catch (e) {
+            // Exibe mensagem de erro
+            let errorMessage;
+            switch (e.code) {
                 case 'auth/invalid-email':
-                    msgErro = 'O endereço de e-mail não é válido.';
-                break;
-
+                    errorMessage = 'O endereço de e-mail não é válido.';
+                    break;
                 case 'auth/wrong-password':
-                    msgErro = 'Senha incorreta.';
-                break;
+                    errorMessage = 'Senha incorreta.';
+                    break;
+                case 'auth/user-not-found':
+                    errorMessage = 'Nenhum usuário encontrado com este e-mail.';
+                    break;
+                default:
+                    errorMessage = e.message;
+                    break;
             }
 
-            setErrorMessage(msgErro);
-        })
-    };
-
-    const handleForgotPassword = () => {
-        Alert.alert('Recuperação de Senha', 'Redirecionando para recuperação de senha...');
+            setErrorMessage(errorMessage);
+        }
     };
 
     const handleCopyrightPress = () => {
@@ -47,13 +50,9 @@ const LoginScreen = () => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor='#050512'/>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Icon name="arrow-left" size={24} color="#ffffff" />
-                </TouchableOpacity>
-                <Image source={require('../../../assets/logo_white.png')} style={styles.logo} />
-            </View>
+            <StatusBar backgroundColor='#050512' />
+
+            <Image source={require('../../../assets/logo_white.png')} style={styles.logo} />
             
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
             
@@ -75,11 +74,9 @@ const LoginScreen = () => {
                 placeholderTextColor="#aaaaaa"
             />
 
-            <View style={styles.checkboxContainer}>
-                <TouchableOpacity onPress={handleForgotPassword}>
-                    <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={{ alignSelf: 'flex-end', marginBottom: 50 }}>
+                <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                 <Text style={styles.loginButtonText}>Login</Text>
@@ -88,7 +85,6 @@ const LoginScreen = () => {
             <TouchableOpacity onPress={handleCopyrightPress} style={styles.copyright}>
                 <Text style={styles.copyrightText}>© 2024 Todos os direitos reservados</Text>
             </TouchableOpacity>
-            
         </View>
     );
 };
@@ -106,19 +102,6 @@ const styles = StyleSheet.create({
         height: 100,
         resizeMode: 'contain',
     },
-    header: {
-        position: 'absolute',
-        top: 30,
-        left: 40,
-        flexDirection: 'row',
-        gap: 35
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#ffffff',
-        marginBottom: 20,
-    },
     input: {
         width: '100%',
         height: 50,
@@ -128,15 +111,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         marginBottom: 10,
         backgroundColor: '#1a1a2e',
-        color: '#ffffff',
-    },
-    checkboxContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    rememberMeText: {
-        marginLeft: 10,
         color: '#ffffff',
     },
     forgotPasswordText: {
@@ -158,10 +132,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     copyright: {
-        marginTop: 20,
+        position: 'absolute',
+        bottom: 30,
     },
     copyrightText: {
-        color: '#00dae4',
+        color: '#FFF',
     },
     errorText: {
         color: '#ff4d4d', // Cor vermelha para a mensagem de erro

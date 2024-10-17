@@ -1,288 +1,318 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Dimensions, SafeAreaView, ScrollView, StatusBar } from "react-native";
-import Icon from 'react-native-vector-icons/FontAwesome';
-import ModalSelector from 'react-native-modal-selector'; // Importando a biblioteca
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  ActivityIndicator,
+  Modal
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 import { useNavigation } from "@react-navigation/native";
 import { useDrawerStatus } from "@react-navigation/drawer";
-import { useUser } from "../../contexts/UserContext";
+import { useUser } from "../../contexts/UserContext"; // Contexto do usuário
+import { getFirestore, collection, onSnapshot, query, where, orderBy } from "firebase/firestore"; // Importação do Firestore do Firebase
 
 import Card from "../../components/CardsHome";
 import AtividadesRender from "../../components/AtividadesProgamadas";
+import CalendarModal from "../../components/CalendarModal";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export default function Home() {
-    const [cards, setCards] = useState([
-        { id: '1', title: 'Temperatura', value: 'Carregando...', valueColor: '#27a348', percentage: '4.6%', percentageColor: '#27a348', info: 'Entre 18:00 e 00:00' },
-        { id: '2', title: 'RPM', value: '50998 RPM', valueColor: '#f02b2b', percentage: '8.8%', percentageColor: '#F02B2B', info: 'Entre 17:00 e 8:00' },
-        { id: '3', title: 'Vibração', value: 'Normal', valueColor: '#27a348', percentage: '4.6%', percentageColor: '#27a348', info: 'Entre 18:00 e 00:00' },
-    ]);
+  const [cards, setCards] = useState([]);
+  const [atividades, setAtividades] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const { user } = useUser(); // Pega os dados do usuário do contexto
+  const navigation = useNavigation();
+  const drawerStatus = useDrawerStatus(); // Para abrir/fechar o drawer
 
-    const [atividades, setAtividades] = useState([
-        { id: '1', titulo: 'Revisão Mensal', local: 'Ala 29', horario: '17:30' },
-        { id: '2', titulo: 'Manutenção Preventiva', local: 'Ala 10', horario: '14:00' },
-        { id: '3', titulo: 'Manutenção Corretiva', local: 'Ala 02', horario: '18:00' }
-    ]);
+  const empresaId = user?.empresaId || ""; // Empresa vinculada ao usuário
+  const userName = user?.nome || "Usuário";
+  const [dateAtividades, setDateAtividades] = useState("01-01-2024"); // Formato DD-MM-YYYY
 
-    const [selectedDate, setSelectedDate] = useState("Hoje");
+  useEffect(() => {
+    if (empresaId) {
+      const unsubscribeSensores = listenToSensores();
+      const unsubscribeAtividades = listenToAtividades();
 
-    // Opções para o Modal Selector
-    const data = [
-        { key: 'Hoje', label: 'Hoje' },
-        { key: 'Amanhã', label: 'Amanhã' },
-        { key: 'Esta Semana', label: 'Esta Semana' },
-    ];
+      // Cleanup function para evitar memory leaks
+      return () => {
+        unsubscribeSensores();
+        unsubscribeAtividades();
+      };
+    } else {
+      console.error("empresaId não está definido.");
+      setLoading(false); // Para evitar loading eterno
+    }
+  }, [empresaId]); // Verifique se a empresaId é alterada
 
-    const navigation = useNavigation();
-    const drawerStatus = useDrawerStatus(); // Hook para saber o status do drawer
+  useEffect(() => {
+    listenToAtividades();
+  }, [dateAtividades])
+  // Função para ouvir os sensores em tempo real
+  const listenToSensores = () => {
+    const db = getFirestore();
+    const sensoresQuery = query(collection(db, "empresas", empresaId, "sensores"));
 
-    const {userData, setUserData} = useUser();
+    return onSnapshot(sensoresQuery, (snapshot) => {
+      const sensoresData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-    // UseEffect para atualizar a StatusBar quando o drawer abrir ou fechar
-    useEffect(() => {
-        if (drawerStatus === 'open') {
-            StatusBar.setBackgroundColor('#121212');
-        } else {
-            StatusBar.setBackgroundColor('#050512');
-        }
-    }, [drawerStatus]);
+      console.log("Sensores data fetched:", sensoresData);
+      setCards(sensoresData);
+    });
+  };
 
-    return (
-        <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="light-content" />
-            <ScrollView style={styles.scrollContainer}>
-                <View style={styles.headerProfile}>
-                    <View style={styles.profileSection}>
-                        <Image
-                            source={require('../Home/assets/image.png')}
-                            style={styles.profileImage}
-                        />
-                        <View>
-                            <Text style={styles.welcomeText}>Olá {userData ? userData.nome : 'Usuário'},</Text>
-                            <Text style={styles.subText}>Bem-vindo de volta!</Text>
-                        </View>
-                    </View>
-
-                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                        <Icon name="bars" size={24} color="#fff" style={styles.burgerIcon} />
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.cards}>
-                    <FlatList
-                        data={cards}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => <Card data={item} />}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                    />
-                </View>
-
-                <View style={styles.opcoesGerais}>
-                    <Text style={styles.title}>Opções gerais</Text>
-                    <View style={styles.iconRow}>
-                        <TouchableOpacity style={styles.iconContainer}>
-                            <View style={[styles.iconBackground, { backgroundColor: '#FF8743' }]}>
-                                <Icon name="wrench" size={24} color="#fff" />
-                            </View>
-                            <Text style={styles.iconText}>Revisões Agendadas</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconContainer}>
-                            <View style={[styles.iconBackground, { backgroundColor: '#2ECC71' }]}>
-                                <Icon name="gears" size={24} color="#fff" />
-                            </View>
-                            <Text style={styles.iconText}>Manutenções Realizadas</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconContainer}>
-                            <View style={[styles.iconBackground, { backgroundColor: '#F4D03F' }]}>
-                                <Icon name="bell" size={24} color="#FFF" />
-                            </View>
-                            <Text style={styles.iconText}>Notificar Setor</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconContainer}>
-                            <View style={[styles.iconBackground, { backgroundColor: '#5DADE2' }]}>
-                                <Icon name="ellipsis-h" size={24} color="#fff" />
-                            </View>
-                            <Text style={styles.iconText}>Mais Opções</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={styles.atividadesContainer}>
-                    <View style={styles.atividadesHeader}>
-                        <Text style={[styles.title, { fontSize: 18 }]}>Atividades Progamadas</Text>
-                        <ModalSelector
-                            data={data}
-                            initValue={selectedDate}
-                            onChange={(option) => {
-                                setSelectedDate(option.key);
-                            }}
-                            style={styles.modalSelector}
-                            selectTextStyle={styles.selectText}
-                            overlayStyle={styles.overlay}
-                            cancelText="Cancelar"
-                            optionContainerStyle={styles.optionContainer}
-                            cancelStyle={styles.cancelButton}
-                            cancelTextStyle={styles.cancelText}
-                            optionTextStyle={styles.optionText}
-                            optionStyle={styles.optionStyle}
-                        >
-
-                            <View style={styles.selectContainer}>
-                                <Text style={styles.selectText} numberOfLines={1}>{selectedDate} </Text>
-                                <Icon name="caret-down" size={16} color="#fff" style={styles.caretIcon} />
-                            </View>
-                        </ModalSelector>
-                    </View>
-
-                    <FlatList
-                        data={atividades}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => <AtividadesRender data={item} />}
-                    />
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+  // Função para ouvir as atividades em tempo real
+  const listenToAtividades = () => {
+    const db = getFirestore();
+  
+    // Certifique-se de que empresaId é válido e não está vazio
+    if (!empresaId) {
+      console.error("empresaId não está definido.");
+      return;
+    }
+  
+    // Definindo a data inicial e final como strings no formato DD-MM-YYYY
+    const startDate = dateAtividades; // Data de início
+    const endDate = dateAtividades; // Data de término
+  
+    // Acesso correto à coleção de atividades
+    const atividadesQuery = query(
+      collection(db, "empresas", empresaId, "atividades"), // Acesso à subcoleção "atividades"
+      where("data", ">=", startDate), // Comparar como string
+      where("data", "<=", endDate),   // Comparar como string
+      orderBy("data")
     );
+  
+    return onSnapshot(atividadesQuery, (snapshot) => {
+      const atividadesData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+  
+      console.log("Data filtrada:", dateAtividades);
+      console.log("Atividades data fetched:", atividadesData);
+      setAtividades(atividadesData);
+      setLoading(false);
+    });
+  };
+
+  function filterDateAtividades(dateSelected) {
+    setDateAtividades(dateSelected);
+  }
+
+  // UseEffect para ajustar a StatusBar conforme o drawer está aberto ou fechado
+  useEffect(() => {
+    StatusBar.setBackgroundColor(drawerStatus === "open" ? "#121212" : "#050512");
+  }, [drawerStatus]);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FFF" />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.headerProfile}>
+          <View style={styles.profileSection}>
+            <View>
+              <Text style={styles.welcomeText}>Olá {userName},</Text>
+              <Text style={styles.subText}>Bem-vindo de volta!</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => navigation.openDrawer()}>
+            <Icon name="bars" size={24} color="#fff" style={styles.burgerIcon} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.cards}>
+          <FlatList
+            data={cards}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <Card data={item} />}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            ListEmptyComponent={() => (
+              <Text style={styles.emptyText}>Nenhum sensor disponível</Text>
+            )}
+          />
+        </View>
+
+        <View style={styles.opcoesGerais}>
+          <Text style={styles.title}>Opções gerais</Text>
+          <View style={styles.iconRow}>
+            <TouchableOpacity style={styles.iconContainer}>
+              <View style={[styles.iconBackground, { backgroundColor: '#FF8743' }]} >
+                <Icon name="wrench" size={24} color="#fff" />
+              </View>
+              <Text style={styles.iconText}>Revisões Agendadas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconContainer}>
+              <View style={[styles.iconBackground, { backgroundColor: '#2ECC71' }]} >
+                <Icon name="gears" size={24} color="#fff" />
+              </View>
+              <Text style={styles.iconText}>Manutenções Realizadas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconContainer}>
+              <View style={[styles.iconBackground, { backgroundColor: '#F4D03F' }]} >
+                <Icon name="bell" size={24} color="#FFF" />
+              </View>
+              <Text style={styles.iconText}>Notificar Setor</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconContainer}>
+              <View style={[styles.iconBackground, { backgroundColor: '#5DADE2' }]} >
+                <Icon name="ellipsis-h" size={24} color="#fff" />
+              </View>
+              <Text style={styles.iconText}>Mais Opções</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.atividadesContainer}>
+          <View style={styles.atividadesHeader}>
+            <Text style={[styles.title, { fontSize: 18 }]}>Atividades Programadas</Text>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Icon name="calendar-o" color="#FFF" size={30} style={{paddingRight: 15}}/>
+            </TouchableOpacity>
+          </View>
+
+          <Modal visible={modalVisible} animationType="slide" transparent={true}>
+            <CalendarModal 
+              setVisible={() => setModalVisible(false)}
+              handleFilter={filterDateAtividades}
+            />
+          </Modal>
+
+          <FlatList
+            data={atividades}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <AtividadesRender data={item} />}
+            ListEmptyComponent={() => (
+              <Text style={styles.emptyText}>Nenhuma atividade encontrada</Text>
+            )}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        backgroundColor: '#050512',
-        flex: 1,
-    },
-    scrollContainer: {
-        paddingTop: 20,
-        paddingHorizontal: 10,
-    },
-    headerProfile: {
-        flexDirection: 'row', // Alinha os itens na horizontal
-        justifyContent: 'space-between', // Espaça o conteúdo do perfil à esquerda e o ícone à direita
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
-    profileSection: {
-        flexDirection: 'row', // Agrupa imagem e texto
-        alignItems: 'center',
-    },
-    profileImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        marginRight: 15,
-    },
-    welcomeText: {
-        color: '#828282',
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    subText: {
-        color: '#fff',
-        fontSize: 20,
-    },
-    burgerIcon: {
-        padding: 10, // Dá espaço para o ícone ser clicável
-    },
-    cards: {
-        marginTop: 30
-    },
-    opcoesGerais: {
-        marginTop: 40,
-    },
-    title: {
-        color: '#fff',
-        fontSize: 22,
-        marginBottom: 25,
-        marginLeft: 10,
-        fontWeight: 'bold',
-    },
-    iconRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        width: '100%',
-    },
-    iconContainer: {
-        alignItems: 'center',
-        width: width / 5,
-    },
-    iconBackground: {
-        width: 60,
-        height: 60,
-        borderRadius: 15,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 5,
-    },
-    iconText: {
-        color: '#fff',
-        textAlign: 'center',
-        fontSize: 10,
-    },
-    atividadesHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between'
-    },
-    atividadesContainer: {
-        marginTop: 40,
-    },
-    modalSelector: {
-        width: 110,
-    },
-    selectContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        backgroundColor: '#3E3E3E',
-        borderRadius: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 5,
-    },
-    selectText: {
-        color: '#fff',
-        fontSize: 14,
-    },
-    overlay: {
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    },
-    cancelButton: {
-        backgroundColor: '#FF4C4C', // Cor de cancelamento vibrante
-        borderRadius: 10,
-        marginTop: 10,
-        paddingVertical: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        elevation: 4,
-    },
-    cancelText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    optionText: {
-        color: '#FFF', // Texto branco para contraste
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    optionStyle: {
-        backgroundColor: '#2E2E2E', // Fundo mais escuro nas opções individuais
-        borderRadius: 8,
-        paddingVertical: 15,
-        paddingHorizontal: 10,
-        marginVertical: 5,
-    },
-    optionContainer: {
-        backgroundColor: '#1E1E1E', // Fundo escuro para as opções
-        borderRadius: 10,
-        marginVertical: 5,
-        padding: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 5,
-        elevation: 6, // Sombra para Android
-    },
+  safeArea: {
+    backgroundColor: '#050512',
+    flex: 1,
+  },
+  loadingContainer: {
+    backgroundColor: '#050512',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1
+  },
+  scrollContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 10,
+  },
+  headerProfile: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  welcomeText: {
+    color: '#828282',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  subText: {
+    color: '#fff',
+    fontSize: 20,
+  },
+  burgerIcon: {
+    padding: 10,
+  },
+  cards: {
+    marginTop: 30
+  },
+  opcoesGerais: {
+    marginTop: 40,
+  },
+  emptyText: {
+    color: '#828282',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 22,
+    marginBottom: 25,
+    marginLeft: 10,
+    fontWeight: 'bold',
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  iconContainer: {
+    alignItems: 'center',
+    width: width / 5,
+  },
+  iconBackground: {
+    width: 60,
+    height: 60,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  iconText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 10,
+  },
+  atividadesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  atividadesContainer: {
+    marginTop: 40,
+  },
+  modalSelector: {
+    width: 110,
+  },
+  selectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: '#1e1e2e',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+  },
+  selectText: {
+    color: '#fff',
+    fontSize: 14,
+  },
 });

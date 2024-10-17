@@ -1,17 +1,36 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 
-const Card = ({data}) => {
+const Card = ({ data }) => {
+  // Se o dado ainda não estiver disponível, renderizar um fallback
+  if (!data) {
+    return <Text style={styles.loadingText}>Carregando...</Text>;
+  }
+
+  // Garantir que os campos corretos estejam disponíveis
+  const { tipo, ultimaLeitura, unidade, localizacao, status } = data;
+
   return (
     <View style={styles.cardContainer}>
       <View style={styles.content}>
-        <Text style={styles.title}>{data.title}</Text>
+        {/* Nome do sensor (tipo) */}
+        <Text style={styles.title}>{tipo || 'Sensor Desconhecido'}</Text>
+
+        {/* Valor atual e unidade */}
         <View style={styles.valueContainer}>
-          <Text style={[styles.value, {color: data.valueColor}]}>{data.value}</Text>
+          <Text style={styles.value}>
+            {ultimaLeitura !== undefined ? `${ultimaLeitura.toFixed(2)} ${unidade || ''}` : '--'}
+          </Text>
         </View>
+
+        {/* Localização do sensor */}
+        <Text style={styles.location}>{`Sensor localizado em: ${localizacao}` || 'Localização desconhecida'}</Text>
+
+        {/* Status do sensor */}
         <View style={styles.infoContainer}>
-          <Text style={[styles.percentage, {color: data.percentageColor}]}>{data.percentage}</Text>
-          <Text style={styles.time}>{data.info}</Text>
+          <Text style={[styles.status, { color: status === 'Ativo' ? '#00D084' : '#FF4C4C' }]}>
+            {status === 'Ativo' ? 'Sensor Ativo' : 'Sensor Inativo'}
+          </Text>
         </View>
       </View>
     </View>
@@ -22,7 +41,7 @@ const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#1e1e2e', // Um cinza escuro, parecido com bg-gray-800
+    backgroundColor: '#1e1e2e', // Um cinza escuro
     borderRadius: 15,
     width: width * 0.9, // Ocupa quase toda a largura da tela
     padding: 20,
@@ -52,21 +71,26 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 28, // Para destacar bem
     fontWeight: 'bold',
+    color: '#00D084', // Verde claro para valores numéricos
+  },
+  location: {
+    color: '#b0b0b0', // Cinza claro para a localização
+    fontSize: 16,
+    marginTop: 5,
   },
   infoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
   },
-  percentage: {
-    color: '#FF8743', // Cor laranja para a porcentagem
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 10,
-  },
-  time: {
-    color: '#b0b0b0', // Cinza claro para o horário
+  status: {
     fontSize: 14,
+    fontWeight: 'bold',
+  },
+  loadingText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
 

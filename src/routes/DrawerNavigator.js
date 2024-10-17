@@ -3,10 +3,10 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import Detalhes from '../pages/Detalhes';
+import ProfilePage from '../pages/UserProfile';
 import Sobre from '../pages/Sobre';
+import Home from '../pages/Home';
 
-import BottomTabNavigator from './BottomTab';
 import CustomDrawer from '../components/CustomDrawer/CustomDrawer';
 
 const Drawer = createDrawerNavigator();
@@ -27,18 +27,24 @@ const DrawerNavigator = () => {
 
             <Drawer.Screen 
             name="Home" 
-            component={BottomTabNavigator} 
+            component={Home} 
             options={{
                 drawerIcon: ({ color }) => (
-                    <Icon name="home-outline" size={22} color={color} />
+                    <Icon name="home" size={22} color={color} />
                 ),
             }}  
             />
 
-            <Drawer.Screen name="Sobre" component={Sobre} />
-            <Drawer.Screen name="Detalhes" component={Detalhes} />
-
-            {/* Adicione outras páginas aqui */}
+            <Drawer.Screen 
+            name="Perfil" 
+            component={ProfilePage}
+            options={{
+                drawerIcon: ({ color }) => (
+                    <Icon name="account" size={22} color={color} />
+                ),
+            }}  
+             />
+             
         </Drawer.Navigator>
     );
 };

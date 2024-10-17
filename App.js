@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import Routes from "./src/routes/routes";
-import { UserProvider, useUser } from './src/contexts/UserContext';
+import { UserProvider } from './src/contexts/UserContext';
 
 export default function App() {
   return(
@@ -12,4 +12,5 @@ export default function App() {
       </NavigationContainer>
     </UserProvider>
   );
+
 }
