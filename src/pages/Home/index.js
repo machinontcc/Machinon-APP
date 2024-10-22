@@ -35,7 +35,17 @@ export default function Home() {
 
   const empresaId = user?.empresaId || ""; // Empresa vinculada ao usuário
   const userName = user?.nome || "Usuário";
-  const [dateAtividades, setDateAtividades] = useState("01-01-2024"); // Formato DD-MM-YYYY
+  const [dateAtividades, setDateAtividades] = useState(""); // Formato DD-MM-YYYY
+
+  useEffect(() => {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+
+    setDateAtividades(formattedDate);
+  }, []);
 
   useEffect(() => {
     if (empresaId) {
@@ -203,7 +213,7 @@ export default function Home() {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <AtividadesRender data={item} />}
             ListEmptyComponent={() => (
-              <Text style={styles.emptyText}>Nenhuma atividade encontrada</Text>
+              <Text style={styles.emptyText}>Nenhuma atividade encontrada para {dateAtividades}</Text>
             )}
           />
         </View>

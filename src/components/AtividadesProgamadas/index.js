@@ -18,7 +18,7 @@ const AtividadesRender = ({ data }) => {
       </View>
       <View style={styles.cardTextContainer}>
         <Text style={styles.cardTitle}>{data.titulo}</Text>
-        <Text style={styles.cardSubtitle}>{data.descricao}</Text>
+        <Text style={styles.cardSubtitle}>Abra a página de Atividades para mais detalhes</Text>
       </View>
       <Text style={styles.cardTime}>{data.data || 'Data não disponível'}</Text>
     </View>

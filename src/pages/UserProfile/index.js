@@ -6,7 +6,17 @@ import Icon from "react-native-vector-icons/FontAwesome"; // Importando ícones
 
 const UserProfile = () => {
   const navigation = useNavigation();
-  const { user } = useUser(); // Pegando dados do usuário do contexto
+  const { user, logout } = useUser(); // Pegando dados do usuário e a função de logout do contexto
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Após logout, você pode redirecionar o usuário, por exemplo, para a tela de login
+      navigation.replace("LoginScreen");
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -40,6 +50,14 @@ const UserProfile = () => {
         <Text style={styles.label}>Empresa:</Text>
         <Text style={styles.value}>{user?.empresa || "Carregando..."}</Text>
       </View>
+
+      {/* Botão de Logout */}
+      <TouchableOpacity 
+        onPress={handleLogout} 
+        style={styles.logoutButton}
+      >
+        <Text style={styles.logoutText}>Sair</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -81,6 +99,18 @@ const styles = StyleSheet.create({
     color: "#B0B0B0",
     fontSize: 16,
     marginBottom: 10,
+  },
+  logoutButton: {
+    backgroundColor: "#FF3B30",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  logoutText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 

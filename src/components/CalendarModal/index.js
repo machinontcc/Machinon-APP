@@ -73,14 +73,17 @@ export default function CalendarModal({ setVisible, handleFilter }) {
                         todayTextColor: '#FF0000',
                         selectedDayBackgroundColor: '#3B3DBF',
                         selectedDayTextColor: '#FFF',
-                        arrowColor: '#3B3DBF',
-                        monthTextColor: '#3B3DBF',
+                        arrowColor: '#FFF',
+                        monthTextColor: '#FFF',
                         textDayFontFamily: 'sans-serif',
+                        backgroundColor: '#050512',
+                        calendarBackground: '#050512'
+                        
                     }}
                 />
 
                 <TouchableOpacity style={styles.buttonFilter} onPress={handleFilterDate}>
-                    <Text style={styles.buttonFilterText}>Filtrar</Text>
+                    <Text style={styles.buttonFilterText}>Selecionar</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -95,7 +98,7 @@ const styles = StyleSheet.create({
     modalContent: {
         flex: 2,
         justifyContent: 'center',
-        backgroundColor: '#FFF',
+        backgroundColor: '#050512',
         padding: 14,
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,

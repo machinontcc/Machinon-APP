@@ -7,6 +7,7 @@ import LoginScreen from '../pages/LoginScreen';
 import ForgotPasswordScreen from '../pages/ForgotPassword';
 import DrawerNavigator from './DrawerNavigator';
 import EditProfile from '../pages/UserProfile/editProfile';
+import CreateActivity from '../pages/CreateAtivididades';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ export default function Routes(){
       <Stack.Screen name='Main' component={DrawerNavigator} />
       <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen} />
       <Stack.Screen name='EditProfile' component={EditProfile} />
+      <Stack.Screen name='CriarAtividades' component={CreateActivity} />
     </Stack.Navigator>
   )
 }

@@ -78,7 +78,7 @@ export const UserProvider = ({ children }) => {
     };
 
     return (
-        <UserContext.Provider value={{ user, loading, error, logout, fetchUserData }}>
+        <UserContext.Provider value={{ user, loading, error, logout, fetchUserData, setUser }}>
             {!loading ? children : null}
         </UserContext.Provider>
     );
