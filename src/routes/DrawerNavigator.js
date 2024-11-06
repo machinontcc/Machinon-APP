@@ -5,8 +5,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import ProfilePage from '../pages/UserProfile';
 import Home from '../pages/Home';
-import FAQScreen from '../pages/FAQ';
 import Atividades from '../pages/Atividades';
+import Funcionarios from '../pages/Funcionarios';
 
 import CustomDrawer from '../components/CustomDrawer/CustomDrawer';
 
@@ -14,8 +14,8 @@ const Drawer = createDrawerNavigator();
 
 const DrawerNavigator = () => {
     return (
-        <Drawer.Navigator 
-            drawerContent={ (props) => <CustomDrawer {...props} /> }
+        <Drawer.Navigator
+            drawerContent={(props) => <CustomDrawer {...props} />}
             screenOptions={{
                 headerShown: false,
                 drawerStyle: { backgroundColor: '#121212' },
@@ -26,47 +26,48 @@ const DrawerNavigator = () => {
             }}
         >
 
-            <Drawer.Screen 
-            name="Home" 
-            component={Home} 
-            options={{
-                drawerIcon: ({ color }) => (
-                    <Icon name="home" size={22} color={color} />
-                ),
-            }}  
+            <Drawer.Screen
+                name="Home"
+                component={Home}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Icon name="home" size={22} color={color} />
+                    ),
+                }}
             />
 
             <Drawer.Screen
-            name="Atividades"
-            component={Atividades}
-            options={{
-                drawerIcon: ({color}) => (
-                    <Icon name="clipboard-text-outline" size={22} color={color}/>
-                )
-            }}
-            />
-
-            <Drawer.Screen 
-                name='FAQ'
-                component={FAQScreen}
+                name="Atividades"
+                component={Atividades}
                 options={{
                     drawerIcon: ({ color }) => (
-                        <Icon name="frequently-asked-questions" size={22} color={color} />
-                    ),
+                        <Icon name="clipboard-text-outline" size={22} color={color} />
+                    )
                 }}
-                
             />
 
-            <Drawer.Screen 
-            name="Perfil" 
-            component={ProfilePage}
-            options={{
-                drawerIcon: ({ color }) => (
-                    <Icon name="account" size={22} color={color} />
-                ),
-            }}  
-             />
-             
+            <Drawer.Screen
+                name="Funcionarios"
+                component={Funcionarios}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Icon name="account-group" size={22} color={color} />
+                    )
+                }}
+            />
+
+
+
+            <Drawer.Screen
+                name="Perfil"
+                component={ProfilePage}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Icon name="account" size={22} color={color} />
+                    ),
+                }}
+            />
+
         </Drawer.Navigator>
     );
 };

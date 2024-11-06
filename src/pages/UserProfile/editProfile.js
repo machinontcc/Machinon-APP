@@ -24,7 +24,6 @@ const EditProfile = () => {
       // Atualizar o documento no Firestore
       await updateDoc(userDocRef, {
         nome: name,
-        email: email,
         telefone: phone,
       });
 
@@ -32,7 +31,6 @@ const EditProfile = () => {
       setUser({
         ...user,
         nome: name,
-        email: email,
         telefone: phone,
       });
 
@@ -63,13 +61,6 @@ const EditProfile = () => {
           onChangeText={setName}
         />
         
-        <Text style={styles.label}>Email:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
         
         <Text style={styles.label}>Telefone:</Text>
         <TextInput
@@ -77,15 +68,6 @@ const EditProfile = () => {
           placeholder="Telefone"
           value={phone}
           onChangeText={setPhone}
-        />
-
-        {/* Empresa (somente leitura) */}
-        <Text style={styles.label}>Empresa: (Não Editavel)</Text>
-        <TextInput
-          style={styles.input}
-          value={company}
-          editable={false} // Torna o campo empresa não editável
-          selectTextOnFocus={false} // Impede a seleção do texto
         />
 
         <TouchableOpacity onPress={handleSave} style={styles.button}>

@@ -29,12 +29,13 @@ export default function Home() {
   const [atividades, setAtividades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const { user } = useUser(); // Pega os dados do usuário do contexto
+  const { user, empresa } = useUser(); // Pega os dados do usuário do contexto
   const navigation = useNavigation();
   const drawerStatus = useDrawerStatus(); // Para abrir/fechar o drawer
 
   const empresaId = user?.empresaId || ""; // Empresa vinculada ao usuário
   const userName = user?.nome || "Usuário";
+  const empresaNome = empresa?.nome || "EmpresaUser";
   const [dateAtividades, setDateAtividades] = useState(""); // Formato DD-MM-YYYY
 
   useEffect(() => {
@@ -61,11 +62,8 @@ export default function Home() {
       console.error("empresaId não está definido.");
       setLoading(false); // Para evitar loading eterno
     }
-  }, [empresaId]); // Verifique se a empresaId é alterada
+  }, [empresaId, dateAtividades]); // Verifique se a empresaId é alterada
 
-  useEffect(() => {
-    listenToAtividades();
-  }, [dateAtividades])
   // Função para ouvir os sensores em tempo real
   const listenToSensores = () => {
     const db = getFirestore();
@@ -150,7 +148,8 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.cards}>
+        <View style={styles.cards}  >
+          <Text style={[styles.subText, {paddingLeft: 4}]}>Sensores da empresa: {empresaNome}</Text>
           <FlatList
             data={cards}
             keyExtractor={(item) => item.id}

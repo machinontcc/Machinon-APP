@@ -8,7 +8,7 @@ const UserProfile = () => {
   const navigation = useNavigation();
   const { user, logout } = useUser(); // Pegando dados do usuário e a função de logout do contexto
 
-  const handleLogout = async () => {
+  const handleLogout = async () => {  
     try {
       await logout();
       // Após logout, você pode redirecionar o usuário, por exemplo, para a tela de login

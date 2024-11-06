@@ -9,36 +9,40 @@ const UserContext = createContext();
 // Provedor do contexto
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [empresa, setEmpresa] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null); // Adiciona estado de erro
 
     // Função para buscar informações adicionais do usuário no Firestore
-    const fetchUserData = async (userId) => {
-        try {
-            const userDoc = await getDoc(doc(firestore, 'users', userId));
-            if (userDoc.exists()) {
-                const userData = { uid: userId, ...userDoc.data() };
-                // Busca o nome da empresa se o empresaId estiver presente
-                if (userData.empresaId) {
-                    const empresaNome = await fetchEmpresaNome(userData.empresaId);
-                    userData.empresa = empresaNome; // Adiciona o nome da empresa ao usuário
+        const fetchUserData = async (userId) => {
+            try {
+                const userDoc = await getDoc(doc(firestore, 'users', userId));
+                if (userDoc.exists()) {
+                    const userData = { uid: userId, ...userDoc.data() };
+                    console.log(userData);
+                    // Busca o nome da empresa se o empresaId estiver presente
+                    if (userData.empresaId) {
+                        const empresaNome = await fetchEmpresa(userData.empresaId);
+                        userData.empresa = empresaNome; // Adiciona o nome da empresa ao usuário
+                    }
+                    setUser(userData);
+                } else {
+                    throw new Error("Usuário não encontrado");
                 }
-                setUser(userData);
-            } else {
-                throw new Error("Usuário não encontrado");
+            } catch (err) {
+                console.error("Erro ao buscar dados do usuário: ", err);
+                setError(err.message); // Define o erro no estado
+                return null; // Retorna null se houver erro
             }
-        } catch (err) {
-            console.error("Erro ao buscar dados do usuário: ", err);
-            setError(err.message); // Define o erro no estado
-            return null; // Retorna null se houver erro
-        }
-    };
+        };
 
     // Função para buscar o nome da empresa pelo ID
-    const fetchEmpresaNome = async (empresaId) => {
+    const fetchEmpresa = async (empresaId) => {
         try {
             const empresaDoc = await getDoc(doc(firestore, 'empresas', empresaId));
             if (empresaDoc.exists()) {
+                setEmpresa(empresaDoc.data());
+                console.log(empresa);
                 return empresaDoc.data().nome; // Retorna o nome da empresa
             } else {
                 console.error("Empresa não encontrada");
@@ -78,7 +82,7 @@ export const UserProvider = ({ children }) => {
     };
 
     return (
-        <UserContext.Provider value={{ user, loading, error, logout, fetchUserData, setUser }}>
+        <UserContext.Provider value={{ user, loading, error, logout, fetchUserData, setUser, empresa }}>
             {!loading ? children : null}
         </UserContext.Provider>
     );
