@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ProfilePage from '../pages/UserProfile';
 import Home from '../pages/Home';
 import Atividades from '../pages/Atividades';
+import NotificationScreen from '../pages/Notifications';
 import Funcionarios from '../pages/Funcionarios';
 
 import CustomDrawer from '../components/CustomDrawer/CustomDrawer';
@@ -42,6 +43,16 @@ const DrawerNavigator = () => {
                 options={{
                     drawerIcon: ({ color }) => (
                         <Icon name="clipboard-text-outline" size={22} color={color} />
+                    )
+                }}
+            />
+
+            <Drawer.Screen
+                name="Notificaçoes"
+                component={NotificationScreen}
+                options={{
+                    drawerIcon: ({ color }) => (
+                        <Icon name="bell" size={22} color={color} />
                     )
                 }}
             />

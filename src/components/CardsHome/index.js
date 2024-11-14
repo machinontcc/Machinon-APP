@@ -19,7 +19,7 @@ const Card = ({ data }) => {
         {/* Valor atual e unidade */}
         <View style={styles.valueContainer}>
           <Text style={styles.value}>
-            {ultimaLeitura !== undefined ? `${ultimaLeitura.toFixed(2)} ${unidade || ''}` : '--'}
+            {ultimaLeitura !== undefined ? `${ultimaLeitura} ${unidade || ''}` : '--'}
           </Text>
         </View>
 
